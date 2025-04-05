@@ -33,6 +33,10 @@ function getCurrentFunctionName() {
  *
  */
 function getFunctionBody(func) {
+  if (typeof func === 'undefined') {
+    return '';
+  }
+
   return func.toString();
 }
 
@@ -71,8 +75,8 @@ function getArgumentsCount(funcs) {
  *
  */
 function getPowerFunction(exponent) {
-  return function(x) {
-    return Math.pow(x, exponent);
+  return function pow(x) {
+    return x ** exponent;
   };
 }
 
@@ -94,11 +98,11 @@ function getPolynom(...args) {
     return null;
   }
 
-  return function(x) {
+  return function reduce(x) {
     return args.reduce((acc, arg, index) => {
-      return acc + arg * Math.pow(x, args.length - 1 - index);
+      return acc + arg * x ** (args.length - 1 - index);
     }, 0);
-  }
+  };
 }
 
 /**
@@ -118,16 +122,16 @@ function getPolynom(...args) {
 function memoize(func) {
   const cache = new Map();
 
-  return function() {
-    const key = JSON.stringify(arguments);
+  return function check(...args) {
+    const key = JSON.stringify(...args);
     if (cache.has(key)) {
       return cache.get(key);
     }
 
-    const result = func.apply(this.arguments);
+    const result = func.apply(this.args);
     cache.set(key, result);
     return result;
-  }
+  };
 }
 
 /**
@@ -146,13 +150,13 @@ function memoize(func) {
  * retryer() => 2
  */
 function retry(func, attempts) {
-  return function() {
+  return function last() {
     let lastError;
 
     for (let i = 0; i < attempts; i += 1) {
       try {
         return func();
-      } catch(error) {
+      } catch (error) {
         lastError = error;
       }
     }
@@ -185,12 +189,12 @@ function retry(func, attempts) {
  *
  */
 function logger(func, logFunc) {
-  return function(...args) {
-    const argsString = args.map(arg => JSON.stringify(arg)).join(, );
+  return function getAgrs(...args) {
+    const argsString = args.map((arg) => JSON.stringify(arg)).join(',');
 
     logFunc(`${func.name}(${argsString}) starts`);
 
-    cosnt result = func(...args);
+    const result = func(...args);
 
     logFunc(`${func.name}(${argsString}) ends`);
 
@@ -212,9 +216,9 @@ function logger(func, logFunc) {
  *   partialUsingArguments(fn, 'a','b','c','d')() => 'abcd'
  */
 function partialUsingArguments(fn, ...args1) {
-  return function(...args2) {
+  return function getAgrs(...args2) {
     return fn.apply(this, [...args1, ...args2]);
-  }
+  };
 }
 
 /**
@@ -237,9 +241,11 @@ function partialUsingArguments(fn, ...args1) {
 function getIdGeneratorFunction(startFrom) {
   let count = startFrom;
 
-  return function() {
-    return count++;
-  }
+  return function increment() {
+    const currentId = count;
+    count += 1;
+    return currentId;
+  };
 }
 
 module.exports = {
